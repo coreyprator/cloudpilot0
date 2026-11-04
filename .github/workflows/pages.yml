@@ -1,0 +1,68 @@
+name: preview
+
+# Publishes the pilot branch to GitHub Pages, but only after the machine test passes,
+# then checks the LIVE preview URL serves exactly the SHA that was tested.
+on:
+  push:
+    branches: [claude/pensive-pascal-2npvoq, pilot]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Machine test
+        run: npm test
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+      - name: Build
+        run: npm run build
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  verify-live:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Live preview serves the tested SHA
+        env:
+          URL: ${{ needs.deploy.outputs.page_url }}
+          SHA: ${{ github.sha }}
+        run: |
+          for i in $(seq 1 30); do
+            body=$(curl -fsS -H 'Cache-Control: no-cache' "${URL}?v=${SHA}" || true)
+            if grep -q '<h1 id="status">CLOUDPILOT0 OK</h1>' <<<"$body" && grep -q "<code id=\"sha\">${SHA}</code>" <<<"$body"; then
+              echo "LIVE_OK url=${URL} sha=${SHA} attempt=${i} at=$(date -u +%FT%TZ)"
+              exit 0
+            fi
+            echo "attempt ${i}: live page not yet at ${SHA}"; sleep 10
+          done
+          echo "LIVE_MISMATCH url=${URL} expected=${SHA}"; echo "$body" | head -40; exit 1
