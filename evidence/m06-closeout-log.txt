@@ -2,3 +2,4 @@
 2026-11-04T13:09:32Z closeout step 2: final M05 re-read
 2026-11-04T13:10:05Z closeout step 3: validate_closeout dry run
 2026-11-04T13:10:51Z closeout step 4: handoff shell D2BDFA51 patched (in_progress, challenge token recorded)
+2026-11-04T13:54:57Z M06 and M08 submitted; all 8 machine BVs pass; awaiting PL V01/V02
