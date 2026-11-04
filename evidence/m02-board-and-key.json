@@ -1,0 +1,16 @@
+{
+ "measured_at": "2026-11-04T12:17Z",
+ "connector": {"present": true, "route": "claude.ai MetaPM connector via https://api.anthropic.com/v2/ccr-sessions/<id>/mcp?mcp_url=https://metapm.rentyourcio.com/mcp-tools", "headers_in_vm_config": ["X-MCP-Server-ID", "X-MCP-Server-Origin", "X-Session-UUID"], "note": "connector calls did NOT move cc-cloud-pilot last_used_at; connector uses a different credential held outside the VM"},
+ "https_with_network_secret": {
+  "curl_POST_mcp-tools_tools/call_list_projects": "HTTP 200 at 2026-11-04T12:17:03Z, no key supplied by CC",
+  "api_clients.mcpc_74a4cebdb8fc(label 'cc-cloud-pilot, full scope').last_used_at": {"before": null, "after": "2026-11-04 12:17:03.345328"},
+  "GET /mcp/handoffs/{id} keyless curl": "403 {\"detail\":\"Invalid API key\"} (server code: 401 'API key required' when absent, 403 when present but != shared MCP_API_KEY) => proxy DID attach a key; REST resolver accepts only the shared key, not per-client keys"
+ },
+ "key_absent_from_vm": {
+  "method": "sha256 every [A-Za-z0-9_-.~+/=:]{16,512} token (and =,:,/ sub-tokens) from all env values and all text files under /root /home/user /tmp /etc /opt /var/tmp /run; filter by 3-hex prefix of the stored hash; exact-match server-side against api_clients.key_hash",
+  "files_scanned": 49146, "token_strings": 6595840, "unique_sha256": 841292, "prefix_candidates": 202,
+  "server_query": "SELECT COUNT(*) FROM api_clients WHERE client_id='mcpc_74a4cebdb8fc' AND LOWER(key_hash) IN (<202 hashes>)",
+  "matches": 0,
+  "env_var_names_with_metapm": "none (only CCR_AUTO_MODE_ALLOW value mentions the hostname, in prose)"
+ }
+}
